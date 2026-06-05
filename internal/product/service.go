@@ -30,3 +30,7 @@ func (s *Service) Create(ctx context.Context, req CreateProductRequest) (*Produc
 
 	return p, nil
 }
+
+func (s *Service) Get(ctx context.Context, id string) (*Product, error) {
+	return s.repo.Get(ctx, id)
+}

@@ -33,3 +33,19 @@ func (r *Repository) Create(ctx context.Context, p *Product) error {
 		p.IsActive,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 }
+
+func (r *Repository) Get(ctx context.Context, id string) (*Product, error) {
+	query := `
+		SELECT id, name, description, price, stock, is_active, created_at, updated_at
+		FROM products
+		WHERE id = $1
+	`
+
+	p := &Product{}
+	err := r.db.QueryRowxContext(ctx, query, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.IsActive, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}

@@ -43,3 +43,34 @@ func (h *Handler) Create(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, resp)
 }
+
+func (h *Handler) Get(c *gin.Context) {
+	id := c.Param("id")
+
+	p, err := h.service.Get(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "product not found with id: " + id,
+		})
+		return
+	}
+
+	resp := ProductResponse{
+		ID:          p.ID,
+		Name:        p.Name,
+		Description: p.Description,
+		Price:       p.Price,
+		Stock:       p.Stock,
+		IsActive:    p.IsActive,
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) Update(c *gin.Context) {
+	// TODO: implement update handler
+}
+
+func (h *Handler) Delete(c *gin.Context) {
+	// TODO: implement delete handler
+}
