@@ -3,6 +3,8 @@ package product
 import (
 	"net/http"
 
+	"webshop/internal/api"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,9 +28,8 @@ func (h *Handler) Create(c *gin.Context) {
 
 	p, err := h.service.Create(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to create product",
-		})
+		c.Error(err)
+		c.Abort()
 		return
 	}
 
@@ -41,7 +42,7 @@ func (h *Handler) Create(c *gin.Context) {
 		IsActive:    p.IsActive,
 	}
 
-	c.JSON(http.StatusCreated, resp)
+	api.SuccessResponse(c, resp)
 }
 
 func (h *Handler) Get(c *gin.Context) {
@@ -49,9 +50,8 @@ func (h *Handler) Get(c *gin.Context) {
 
 	p, err := h.service.Get(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "product not found with id: " + id,
-		})
+		c.Error(err)
+		c.Abort()
 		return
 	}
 
@@ -64,7 +64,7 @@ func (h *Handler) Get(c *gin.Context) {
 		IsActive:    p.IsActive,
 	}
 
-	c.JSON(http.StatusOK, resp)
+	api.SuccessResponse(c, resp)
 }
 
 func (h *Handler) Update(c *gin.Context) {

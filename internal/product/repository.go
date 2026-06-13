@@ -42,10 +42,11 @@ func (r *Repository) Get(ctx context.Context, id string) (*Product, error) {
 	`
 
 	p := &Product{}
-	err := r.db.QueryRowxContext(ctx, query, id).Scan(&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.IsActive, &p.CreatedAt, &p.UpdatedAt)
+	err := r.db.QueryRowxContext(ctx, query, id).Scan(
+		&p.ID, &p.Name, &p.Description, &p.Price, &p.Stock, &p.IsActive, &p.CreatedAt, &p.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
-
 	return p, nil
 }

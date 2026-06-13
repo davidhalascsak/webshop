@@ -1,6 +1,12 @@
 package product
 
-import "context"
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"webshop/internal/apperrors"
+)
 
 type Service struct {
 	repo *Repository
@@ -27,10 +33,21 @@ func (s *Service) Create(ctx context.Context, req CreateProductRequest) (*Produc
 	if err := s.repo.Create(ctx, p); err != nil {
 		return nil, err
 	}
-
 	return p, nil
 }
 
 func (s *Service) Get(ctx context.Context, id string) (*Product, error) {
-	return s.repo.Get(ctx, id)
+	p, err := s.repo.Get(ctx, id)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &apperrors.AppError{
+				Kind:    apperrors.ErrNotFound,
+				Message: fmt.Sprintf("Product with id %s is not found", id),
+			}
+		}
+		return nil, err
+	}
+
+	return p, nil
 }

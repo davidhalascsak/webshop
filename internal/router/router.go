@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"webshop/internal/api"
 	"webshop/internal/product"
 
 	"github.com/gin-gonic/gin"
@@ -13,10 +14,11 @@ type Handlers struct {
 
 func Setup(h Handlers) *gin.Engine {
 	engine := gin.Default()
+	engine.Use(api.ErrorMiddleware())
 
-	api := engine.Group("/api/v1")
+	apiGroup := engine.Group("/api/v1")
 	{
-		product.RegisterRoutes(api, h.ProductHandler)
+		product.RegisterRoutes(apiGroup, h.ProductHandler)
 	}
 
 	engine.GET("/health", func(c *gin.Context) {
