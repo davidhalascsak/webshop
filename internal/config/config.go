@@ -8,16 +8,20 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DatabaseUrl string
+	Port              string
+	DatabaseUrl       string
+	KeycloakIssuerURL string
+	KeycloakClientID  string
 }
 
 func Load() *Config {
 	godotenv.Load()
 
 	return &Config{
-		Port:        getEnv("PORT", "8080"),
-		DatabaseUrl: mustGetEnv("DATABASE_URL"),
+		Port:              getEnv("PORT", "8080"),
+		DatabaseUrl:       mustGetEnv("DATABASE_URL"),
+		KeycloakIssuerURL: mustGetEnv("KEYCLOAK_ISSUER_URL"),
+		KeycloakClientID:  mustGetEnv("KEYCLOAK_CLIENT_ID"),
 	}
 }
 

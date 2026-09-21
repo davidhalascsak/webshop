@@ -14,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 
+	"webshop/internal/auth"
 	"webshop/internal/config"
 	"webshop/internal/product"
 	"webshop/internal/router"
@@ -41,6 +42,15 @@ func main() {
 	}
 	logger.Info("database connected successfully")
 
+	authenticator, err := auth.NewAuthenticator(
+		context.Background(),
+		cfg.KeycloakIssuerURL,
+		cfg.KeycloakClientID,
+	)
+	if err != nil {
+		logger.Fatal("failed to initialize authenticator", zap.Error(err))
+	}
+
 	productDatabase := product.ProductRepository(db)
 	productService := product.ProductService(productDatabase)
 	productHandler := product.ProductHandler(productService)
@@ -48,7 +58,7 @@ func main() {
 		ProductHandler: productHandler,
 	}
 
-	engine := router.Setup(handlers)
+	engine := router.Setup(handlers, authenticator)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),

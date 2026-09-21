@@ -3,7 +3,9 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"webshop/internal/apperrors"
+	"webshop/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,5 +40,33 @@ func ErrorMiddleware() gin.HandlerFunc {
 		default:
 			ErrorResponse(c, http.StatusInternalServerError, "internal_error", err)
 		}
+	}
+}
+
+func AuthMiddleware(authenticator *auth.Authenticator) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			ErrorResponse(c, http.StatusUnauthorized, "missing_token", apperrors.ErrUnauthorized)
+			c.Abort()
+			return
+		}
+
+		const bearerPrefix = "Bearer "
+		if !strings.HasPrefix(token, bearerPrefix) {
+			ErrorResponse(c, http.StatusUnauthorized, "invalid_token", apperrors.ErrUnauthorized)
+			c.Abort()
+			return
+		}
+
+		userID, err := authenticator.ValidateToken(c.Request.Context(), strings.TrimPrefix(token, bearerPrefix))
+		if err != nil {
+			ErrorResponse(c, http.StatusUnauthorized, "invalid_token", apperrors.ErrUnauthorized)
+			c.Abort()
+			return
+		}
+
+		c.Set("userID", userID)
+		c.Next()
 	}
 }
