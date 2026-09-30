@@ -1,11 +1,16 @@
 package product
 
-import "github.com/gin-gonic/gin"
+import (
+	"webshop/internal/api"
+	"webshop/internal/auth"
 
-func RegisterRoutes(api *gin.RouterGroup, h *Handler) {
-	products := api.Group("/products")
+	"github.com/gin-gonic/gin"
+)
+
+func RegisterRoutes(apiGroup *gin.RouterGroup, h *Handler) {
+	products := apiGroup.Group("/products")
 	{
-		products.POST("", h.Create)
-		products.GET("/:id", h.Get)
+		products.POST("", api.RequireRole(auth.RoleAdmin), h.Create)
+		products.GET("/:id", api.RequireRole(auth.RoleUser, auth.RoleAdmin), h.Get)
 	}
 }

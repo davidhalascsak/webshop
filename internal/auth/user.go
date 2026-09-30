@@ -1,7 +1,5 @@
 package auth
 
-import "fmt"
-
 type Role string
 
 const (
@@ -30,7 +28,7 @@ func UserFromClaims(claims *KeycloakClaims, clientID string) (User, error) {
 
 	client, ok := claims.ResourceAccess[clientID]
 	if !ok {
-		return User{}, fmt.Errorf("roles for client %q not found", clientID)
+		return user, nil
 	}
 
 	for _, role := range client.Roles {
@@ -43,10 +41,6 @@ func UserFromClaims(claims *KeycloakClaims, clientID string) (User, error) {
 
 		default:
 		}
-	}
-
-	if len(user.Roles) == 0 {
-		return User{}, fmt.Errorf("user has no recognized roles for client %q", clientID)
 	}
 
 	return user, nil

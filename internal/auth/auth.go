@@ -68,9 +68,5 @@ func (a *Authenticator) ValidateToken(ctx context.Context, rawToken string) (Use
 		return User{}, errors.New("token has no subject")
 	}
 
-	if claims.ResourceAccess == nil {
-		return User{}, errors.New("token missing required resource_access map")
-	}
-
 	return UserFromClaims(&claims, a.clientID)
 }

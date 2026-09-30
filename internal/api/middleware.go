@@ -35,6 +35,8 @@ func ErrorMiddleware() gin.HandlerFunc {
 			ErrorResponse(c, http.StatusConflict, appErr.Message, appErr.Kind)
 		case apperrors.ErrUnauthorized:
 			ErrorResponse(c, http.StatusUnauthorized, appErr.Message, appErr.Kind)
+		case apperrors.ErrForbidden:
+			ErrorResponse(c, http.StatusForbidden, appErr.Message, appErr.Kind)
 		case apperrors.ErrInternal:
 			ErrorResponse(c, http.StatusInternalServerError, appErr.Message, appErr.Kind)
 		default:
@@ -59,14 +61,36 @@ func AuthMiddleware(authenticator *auth.Authenticator) gin.HandlerFunc {
 			return
 		}
 
-		userID, err := authenticator.ValidateToken(c.Request.Context(), strings.TrimPrefix(token, bearerPrefix))
+		user, err := authenticator.ValidateToken(c.Request.Context(), strings.TrimPrefix(token, bearerPrefix))
 		if err != nil {
 			ErrorResponse(c, http.StatusUnauthorized, "invalid_token", apperrors.ErrUnauthorized)
 			c.Abort()
 			return
 		}
 
-		c.Set("userID", userID)
+		c.Set("user", user)
 		c.Next()
+	}
+}
+
+func RequireRole(roles ...auth.Role) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userValue, ok := c.Get("user")
+		user, validUser := userValue.(auth.User)
+		if !ok || !validUser {
+			ErrorResponse(c, http.StatusUnauthorized, "unauthorized", apperrors.ErrUnauthorized)
+			c.Abort()
+			return
+		}
+
+		for _, role := range roles {
+			if user.HasRole(role) {
+				c.Next()
+				return
+			}
+		}
+
+		ErrorResponse(c, http.StatusForbidden, "forbidden", apperrors.ErrForbidden)
+		c.Abort()
 	}
 }
